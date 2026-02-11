@@ -28,7 +28,6 @@ function playRandomSound() {
     const randomId = sounds[Math.floor(Math.random() * sounds.length)];
     const audio = document.getElementById(randomId);
     
-    // Reset sound to start if it's already playing
     audio.currentTime = 0; 
     audio.play().catch(e => console.log("Interaction required for audio"));
 }
@@ -38,25 +37,21 @@ function handleNoClick() {
     const yesButton = document.querySelector('.yes-button');
     const mainGif = document.getElementById('mainGif');
     
-    // Play a random sound effect
     playRandomSound();
 
-    // 1. Change GIF (Random on first click, cycle after)
     if (messageIndex === 0) {
         mainGif.src = noGifs[Math.floor(Math.random() * noGifs.length)];
     } else {
         mainGif.src = noGifs[messageIndex % noGifs.length];
     }
 
-    // 2. Update text
     noButton.textContent = messages[messageIndex % messages.length];
     messageIndex++;
     
-    // 3. Make Yes button bigger
     const currentSize = parseFloat(window.getComputedStyle(yesButton).fontSize);
     yesButton.style.fontSize = `${currentSize * 1.4}px`;
     
-    // 4. Move the button ONLY if it has moved less than 2 times
+    // On mobile, the button only moves AFTER it is clicked (via this function)
     if (moveCount < 2) {
         moveButton(noButton);
         moveCount++;
@@ -65,7 +60,6 @@ function handleNoClick() {
 
 function moveButton(button) {
     button.style.position = 'fixed';
-    // Calculate random coordinates while staying within the viewport
     const x = Math.random() * (window.innerWidth - button.offsetWidth);
     const y = Math.random() * (window.innerHeight - button.offsetHeight);
     
@@ -76,22 +70,21 @@ function moveButton(button) {
 document.addEventListener('DOMContentLoaded', () => {
     const noButton = document.querySelector('.no-button');
 
-    // Helper function to trigger the dodge
-    const triggerDodge = () => {
-        if (moveCount < 2) {
-            moveButton(noButton);
-            moveCount++;
-        }
-    };
+    // Desktop only dodge logic
+    // We check if the device has a mouse (hover capability)
+    const isDesktop = window.matchMedia("(pointer: fine)").matches;
 
-    // Desktop dodge (hover)
-    noButton.addEventListener('mouseover', triggerDodge);
-
-    // Mobile dodge (instant touch)
-    noButton.addEventListener('touchstart', (e) => {
-        e.preventDefault(); // Prevents "ghost clicks" on mobile
-        triggerDodge();
-    });
+    if (isDesktop) {
+        noButton.addEventListener('mouseover', () => {
+            if (moveCount < 2) {
+                moveButton(noButton);
+                moveCount++;
+            }
+        });
+    }
+    
+    // Note: 'touchstart' is removed so it doesn't dodge 
+    // before the click registers on mobile.
 });
 
 function handleYesClick() {
