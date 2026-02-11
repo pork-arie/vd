@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knew you would say yes!</title>
+    <link rel="stylesheet" href="./yes_style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="header_text">Knew you would say yes!</h1>
+        <div class="gif_container">
+            <img src="i-love-you.gif" alt="Happy Cat">
+        </div>
+    </div>
+
+    <audio id="successMusic" src="stardust-music-sounds-better-with-you.mp3" autoplay loop></audio>
+
+    <script>
+        // Fallback: Some browsers still require a manual trigger even after a redirect
+        window.addEventListener('load', () => {
+            const audio = document.getElementById('successMusic');
+            audio.play().catch(e => {
+                console.log("Autoplay prevented. Click anywhere to play music.");
+                // If blocked, play on the first click anywhere on the page
+                window.addEventListener('click', () => audio.play(), { once: true });
+            });
+        });
+    </script>
+</body>
+</html>
