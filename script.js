@@ -22,37 +22,41 @@ const noGifs = [
 
 let messageIndex = 0;
 let moveCount = 0;
+const maxMoves = 2;
 
 function playRandomSound() {
     const sounds = ['sound1', 'sound2', 'sound3'];
     const randomId = sounds[Math.floor(Math.random() * sounds.length)];
     const audio = document.getElementById(randomId);
-    
-    audio.currentTime = 0; 
-    audio.play().catch(e => console.log("Interaction required for audio"));
+    if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+    }
 }
 
 function handleNoClick() {
     const noButton = document.querySelector('.no-button');
     const yesButton = document.querySelector('.yes-button');
     const mainGif = document.getElementById('mainGif');
-    
+
     playRandomSound();
 
-    if (messageIndex === 0) {
-        mainGif.src = noGifs[Math.floor(Math.random() * noGifs.length)];
-    } else {
-        mainGif.src = noGifs[messageIndex % noGifs.length];
-    }
+    // 1. Change GIF
+    mainGif.src = noGifs[messageIndex % noGifs.length];
 
+    // 2. Update Text
     noButton.textContent = messages[messageIndex % messages.length];
     messageIndex++;
-    
+
+    // 3. Make Yes button bigger (Responsive Cap)
     const currentSize = parseFloat(window.getComputedStyle(yesButton).fontSize);
-    yesButton.style.fontSize = `${currentSize * 1.4}px`;
-    
-    // On mobile, the button only moves AFTER it is clicked (via this function)
-    if (moveCount < 2) {
+    // Limit growth slightly so it doesn't break the mobile screen entirely
+    if (currentSize < 100) { 
+        yesButton.style.fontSize = `${currentSize * 1.3}px`;
+    }
+
+    // 4. Move logic
+    if (moveCount < maxMoves) {
         moveButton(noButton);
         moveCount++;
     }
@@ -60,31 +64,44 @@ function handleNoClick() {
 
 function moveButton(button) {
     button.style.position = 'fixed';
-    const x = Math.random() * (window.innerWidth - button.offsetWidth);
-    const y = Math.random() * (window.innerHeight - button.offsetHeight);
     
+    // Ensure the button is always on top of the growing "Yes" button
+    button.style.zIndex = "9999";
+
+    // Calculate safe screen area
+    const padding = 15;
+    const buttonWidth = button.offsetWidth;
+    const buttonHeight = button.offsetHeight;
+
+    // Get random coordinates within visible screen
+    const x = Math.random() * (window.innerWidth - buttonWidth - (padding * 2)) + padding;
+    const y = Math.random() * (window.innerHeight - buttonHeight - (padding * 2)) + padding;
+
     button.style.left = `${x}px`;
     button.style.top = `${y}px`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const noButton = document.querySelector('.no-button');
-
-    // Desktop only dodge logic
-    // We check if the device has a mouse (hover capability)
     const isDesktop = window.matchMedia("(pointer: fine)").matches;
 
+    // Desktop hover dodge
     if (isDesktop) {
         noButton.addEventListener('mouseover', () => {
-            if (moveCount < 2) {
+            if (moveCount < maxMoves) {
                 moveButton(noButton);
                 moveCount++;
             }
         });
     }
-    
-    // Note: 'touchstart' is removed so it doesn't dodge 
-    // before the click registers on mobile.
+
+    // Mobile/Resize adjustment
+    window.addEventListener('resize', () => {
+        if (moveCount > 0) {
+            // Re-position button if screen rotates so it's not lost
+            moveButton(noButton);
+        }
+    });
 });
 
 function handleYesClick() {
