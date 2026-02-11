@@ -65,19 +65,32 @@ function handleNoClick() {
 
 function moveButton(button) {
     button.style.position = 'fixed';
+    // Calculate random coordinates while staying within the viewport
     const x = Math.random() * (window.innerWidth - button.offsetWidth);
     const y = Math.random() * (window.innerHeight - button.offsetHeight);
+    
     button.style.left = `${x}px`;
     button.style.top = `${y}px`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const noButton = document.querySelector('.no-button');
-    noButton.addEventListener('mouseover', () => {
+
+    // Helper function to trigger the dodge
+    const triggerDodge = () => {
         if (moveCount < 2) {
             moveButton(noButton);
             moveCount++;
         }
+    };
+
+    // Desktop dodge (hover)
+    noButton.addEventListener('mouseover', triggerDodge);
+
+    // Mobile dodge (instant touch)
+    noButton.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Prevents "ghost clicks" on mobile
+        triggerDodge();
     });
 });
 
